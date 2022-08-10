@@ -32,7 +32,6 @@ async function logIn(req, res) {
 
     res.status(200).json({ auth: true, token: token });
   } catch (err) {
-    console.err(err);
     res.status(500).send(err);
   }
 }
