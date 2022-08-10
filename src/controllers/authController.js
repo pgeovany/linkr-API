@@ -1,33 +1,43 @@
-import userRepository from '../repositories/userRepository.js';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import userRepository from '../repositories/userRepository.js';
 
 async function logOut(req, res) {
-  res.sendStatus(200);
+  try {
+    const token = jwt.sign({}, process.env.JWT_SECRET, { expiresIn: 3 });
+    res.status(200).send({ token });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 }
 
 async function logIn(req, res) {
   const { email, senha } = req.body;
   const SECRET = process.env.JWT_SECRET;
+
   try {
-    const { rows: validUser } = await userRepository.getUserByEmail(email.trim());
-    if(validUser.length === 0) {
-        return res.status(401).send('Invalid email or password.') 
+    const { rows: validUser } = await userRepository.getUserByEmail(
+      email.trim()
+    );
+    if (validUser.length === 0) {
+      return res.status(401).send('Invalid email or password.');
     }
+
     const isValidPssword = bcrypt.compareSync(senha, validUser[0].senha);     
     if(!isValidPssword) {
         return res.status(401).send('Invalid email or password.') 
+
     }
 
     const token = jwt.sign(validUser[0], SECRET, {
-        expiresIn: 900
+      expiresIn: 60 * 60 * 24,
     });
-
     res.status(200).json({auth: true, nome: validUser[0].nome , token: token});
 
   } catch (err) {
       console.error(err);
       res.status(500).send(err);
+
   }
 }
 
