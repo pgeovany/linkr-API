@@ -36,4 +36,6 @@ async function logIn(req, res) {
   }
 }
 
-export { logOut, logIn };
+async function logUp(req, res) {}
+
+export { logOut, logIn, logUp };
