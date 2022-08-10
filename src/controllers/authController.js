@@ -20,7 +20,7 @@ async function logIn(req, res) {
     }
 
     const token = jwt.sign(validUser[0], SECRET, {
-        expiresIn: 900
+        expiresIn: 60*60*24
     });
 
     res.status(200).json({auth: true, token: token});
