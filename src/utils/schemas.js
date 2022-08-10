@@ -5,4 +5,9 @@ const postsSchema = joi.object({
   content: joi.string(),
 });
 
-export { postsSchema };
+const loginSchema = joi.object({
+  email: joi.string().required(),
+  password: joi.string().required(),
+});
+
+export { postsSchema, loginSchema };

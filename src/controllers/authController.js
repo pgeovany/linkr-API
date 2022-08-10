@@ -14,6 +14,7 @@ async function logOut(req, res) {
 async function logIn(req, res) {
   const { email, password } = req.body;
   const SECRET = process.env.JWT_SECRET;
+
   try {
     const { rows: validUser } = await userRepository.getUserByEmail(
       email.trim()
@@ -21,12 +22,13 @@ async function logIn(req, res) {
     if (validUser.length === 0) {
       return res.status(401).send('Invalid email or password.');
     }
+
     const isValidPssword = bcrypt.compareSync(password, validUser[0].senha);
     if (!isValidPssword) {
       return res.status(401).send('Invalid email or password.');
     }
 
-    const token = jwt.sign({ userId: validUser[0].id }, SECRET, {
+    const token = jwt.sign({ id: validUser[0].id }, SECRET, {
       expiresIn: 60 * 60 * 24,
     });
 
