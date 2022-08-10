@@ -32,7 +32,7 @@ async function logIn(req, res) {
     const token = jwt.sign(validUser[0], SECRET, {
       expiresIn: 60 * 60 * 24,
     });
-    res.status(200).json({auth: true, nome: validUser[0].nome , token: token});
+    res.status(200).json({auth: true, nome: validUser[0].nome , foto: validUser[0].foto, token: token});
 
   } catch (err) {
       console.error(err);
