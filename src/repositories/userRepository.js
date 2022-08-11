@@ -38,7 +38,7 @@ async function checkEmail(body) {
 async function searchUsers(name) {
   const { rows } = await connection.query(
     `
-      SELECT * FROM users
+      SELECT id, nome, foto FROM users
       WHERE nome ILIKE $1
     `,
     [`${name}%`]
