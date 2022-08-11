@@ -13,6 +13,6 @@ postsRouter.post(
   savePost
 );
 
-postsRouter.get('/posts', getPosts);
+postsRouter.get('/posts', tokenMiddleware, getPosts);
 
 export default postsRouter;
