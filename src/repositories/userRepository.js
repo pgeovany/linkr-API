@@ -34,15 +34,15 @@ async function checkEmail(body) {
   );
 }
 
-async function insertUser(name, email, encryptKey, foto) {
-  return await connection.query(
-    `
-    INSERT INTO users (nome, email, senha, foto ) 
-    VALUES ($1, $2, $3, $4)
-    `,
-    [name, email, encryptKey, foto]
-  );
-}
+// async function insertUser(name, email, encryptKey, foto) {
+//   return await connection.query(
+//     `
+//     INSERT INTO users (nome, email, senha, foto )
+//     VALUES ($1, $2, $3, $4)
+//     `,
+//     [name, email, encryptKey, foto]
+//   );
+// }
 
 const userRepository = {
   getUserByEmail,
