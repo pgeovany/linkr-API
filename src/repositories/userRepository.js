@@ -10,11 +10,11 @@ async function getUserByEmail(email) {
   );
 }
 async function insertUser(body) {
-  const nome = body.name;
+  const nome = body.username;
   const email = body.email;
   const senha = body.password;
   const foto = body.pictureUrl;
-
+  console.log(body);
   return await connection.query(
     `
     INSERT INTO users(nome,email,senha,foto) VALUES($1,$2,$3,$4);
@@ -23,9 +23,21 @@ async function insertUser(body) {
   );
 }
 
+async function checkEmail(body) {
+  const email = body.email;
+  console.log(email);
+  return await connection.query(
+    `
+      SELECT * FROM users WHERE email = $1;
+      `,
+    [email]
+  );
+}
+
 const userRepository = {
   getUserByEmail,
   insertUser,
+  checkEmail,
 };
 
 export default userRepository;
