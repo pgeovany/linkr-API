@@ -12,4 +12,13 @@ async function savePost(req, res) {
   }
 }
 
-export { savePost };
+async function getPosts(req, res) {
+  try {
+    const posts = await postsRepository.getPosts();
+    res.status(200).send(posts);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export { savePost, getPosts };
