@@ -34,20 +34,33 @@ async function checkEmail(body) {
   );
 }
 
-async function insertUser(name, email, encryptKey, foto) {
-  return await connection.query(
+// async function insertUser(name, email, encryptKey, foto) {
+//   return await connection.query(
+//     `
+//     INSERT INTO users (nome, email, senha, foto )
+//     VALUES ($1, $2, $3, $4)
+//     `,
+//     [name, email, encryptKey, foto]
+//   );
+// }
+
+async function searchUsers(name) {
+  const { rows } = await connection.query(
     `
-    INSERT INTO users (nome, email, senha, foto ) 
-    VALUES ($1, $2, $3, $4)
+      SELECT * FROM users
+      WHERE nome ILIKE $1
     `,
-    [name, email, encryptKey, foto]
+    [`${name}%`]
   );
+
+  return rows;
 }
 
 const userRepository = {
   getUserByEmail,
   insertUser,
   checkEmail,
+  searchUsers,
 };
 
 export default userRepository;
