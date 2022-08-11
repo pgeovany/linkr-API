@@ -25,8 +25,4 @@ const logupSchema = joi.object({
     .required(),
 });
 
-const searchSchema = joi.object({
-  name: joi.string().allow('').required(),
-});
-
-export { postsSchema, loginSchema, logupSchema, searchSchema };
+export { postsSchema, loginSchema, logupSchema };
