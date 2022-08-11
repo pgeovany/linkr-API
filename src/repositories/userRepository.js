@@ -9,12 +9,13 @@ async function getUserByEmail(email) {
     [email]
   );
 }
+
 async function insertUser(body) {
   const nome = body.username;
   const email = body.email;
   const senha = body.password;
   const foto = body.pictureUrl;
-  console.log(body);
+
   return await connection.query(
     `
     INSERT INTO users(nome,email,senha,foto) VALUES($1,$2,$3,$4);
@@ -33,16 +34,6 @@ async function checkEmail(body) {
     [email]
   );
 }
-
-// async function insertUser(name, email, encryptKey, foto) {
-//   return await connection.query(
-//     `
-//     INSERT INTO users (nome, email, senha, foto )
-//     VALUES ($1, $2, $3, $4)
-//     `,
-//     [name, email, encryptKey, foto]
-//   );
-// }
 
 async function searchUsers(name) {
   const { rows } = await connection.query(

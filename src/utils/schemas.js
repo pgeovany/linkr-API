@@ -1,7 +1,12 @@
 import joi from 'joi';
 
 const postsSchema = joi.object({
-  url: joi.string().required(),
+  url: joi
+    .string()
+    .pattern(
+      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/
+    )
+    .required(),
   content: joi.string(),
 });
 
