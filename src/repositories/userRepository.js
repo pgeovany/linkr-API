@@ -9,12 +9,13 @@ async function getUserByEmail(email) {
     [email]
   );
 }
+
 async function insertUser(body) {
   const nome = body.username;
   const email = body.email;
   const senha = body.password;
   const foto = body.pictureUrl;
-  console.log(body);
+
   return await connection.query(
     `
     INSERT INTO users(nome,email,senha,foto) VALUES($1,$2,$3,$4);
@@ -34,20 +35,23 @@ async function checkEmail(body) {
   );
 }
 
-// async function insertUser(name, email, encryptKey, foto) {
-//   return await connection.query(
-//     `
-//     INSERT INTO users (nome, email, senha, foto )
-//     VALUES ($1, $2, $3, $4)
-//     `,
-//     [name, email, encryptKey, foto]
-//   );
-// }
+async function searchUsers(name, id) {
+  const { rows } = await connection.query(
+    `
+      SELECT id, nome, foto FROM users
+      WHERE nome ILIKE $1 AND id <> $2
+    `,
+    [`${name}%`, id]
+  );
+
+  return rows;
+}
 
 const userRepository = {
   getUserByEmail,
   insertUser,
   checkEmail,
+  searchUsers,
 };
 
 export default userRepository;
