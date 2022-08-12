@@ -35,13 +35,13 @@ async function checkEmail(body) {
   );
 }
 
-async function searchUsers(name) {
+async function searchUsers(name, id) {
   const { rows } = await connection.query(
     `
       SELECT id, nome, foto FROM users
-      WHERE nome ILIKE $1
+      WHERE nome ILIKE $1 AND id <> $2
     `,
-    [`${name}%`]
+    [`${name}%`, id]
   );
 
   return rows;
