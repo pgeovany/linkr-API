@@ -26,7 +26,7 @@ async function insertUser(body) {
 
 async function checkEmail(body) {
   const email = body.email;
-  console.log(email);
+
   return await connection.query(
     `
       SELECT * FROM users WHERE email = $1;

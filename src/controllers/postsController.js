@@ -8,6 +8,7 @@ async function savePost(req, res) {
     await postsRepository.savePost(userId, url, content);
     res.sendStatus(201);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }
@@ -17,6 +18,7 @@ async function getPosts(req, res) {
     const posts = await postsRepository.getPosts();
     res.status(200).send(posts);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }
