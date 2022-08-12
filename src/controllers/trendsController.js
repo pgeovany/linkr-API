@@ -11,4 +11,14 @@ async function getTrends(req, res) {
     }
 }
 
-export { getTrends };
+async function getTrendsByName(req, res) {
+    const { name } = req.params;
+    try {
+        const rows = await trendsRepository.getTrendsById(name);
+        res.status(200).send(rows);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
+export { getTrends, getTrendsByName };
