@@ -7,7 +7,7 @@ async function savePost(userId, url, content) {
 
   await connection.query(
     `
-      INSERT INTO posts (user_id, conteudo, url, url_title, url_image, url_description)
+      INSERT INTO posts (user_id, content, url, url_title, url_image, url_description)
       VALUES ($1, $2, $3, $4, $5, $6)
     `,
     [userId, postContent, url, urlTitle, urlImage, urlDescription]
@@ -17,13 +17,13 @@ async function savePost(userId, url, content) {
 async function getPosts() {
   const { rows } = await connection.query(
     `
-      SELECT posts.id, posts.conteudo, url, url_title AS "urlTitle",
+      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
       url_image AS "urlImage", url_description AS "urlDescription", 
-      json_build_object('id', users.id, 'name', users.nome, 'picture', users.foto) AS "user"
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user"
       FROM posts
       JOIN users
       ON users.id = posts.user_id
-      ORDER BY posts.criado_em DESC
+      ORDER BY posts.created_at DESC
       LIMIT 20
     `
   );
