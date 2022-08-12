@@ -31,14 +31,12 @@ async function logIn(req, res) {
     const token = jwt.sign(validUser[0], SECRET, {
       expiresIn: 60 * 60 * 24,
     });
-    res
-      .status(200)
-      .json({
-        auth: true,
-        nome: validUser[0].nome,
-        foto: validUser[0].foto,
-        token: token,
-      });
+    res.status(200).json({
+      auth: true,
+      nome: validUser[0].nome,
+      foto: validUser[0].foto,
+      token: token,
+    });
   } catch (err) {
     res.status(500).send(err);
   }
@@ -46,7 +44,7 @@ async function logIn(req, res) {
 
 async function logUp(req, res) {
   const body = req.body;
-  console.log(body);
+
   try {
     const { rowCount: thereIsEmail } = await userRepository.checkEmail(body);
 
@@ -58,12 +56,10 @@ async function logUp(req, res) {
     delete body.password;
 
     const bodyInsert = { ...body, password: encryptedPassword };
-    console.log(bodyInsert);
 
     await userRepository.insertUser(bodyInsert);
     res.sendStatus(201);
   } catch (error) {
-    console.log(error);
     res.sendStatus(500);
   }
 }
