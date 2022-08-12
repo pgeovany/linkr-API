@@ -33,7 +33,7 @@ async function getPosts() {
 
 const postsRepository = {
   savePost,
-  getPosts,
+  getPosts
 };
 
 export default postsRepository;
