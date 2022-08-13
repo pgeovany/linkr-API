@@ -5,7 +5,7 @@ async function tokenMiddleware(req, res, next) {
   const token = authorization?.replace('Bearer ', '');
 
   if (!token) {
-    res.sendStatus(401);
+    res.status(401).send('Access denied. No token provided.');
     return;
   }
 
@@ -17,7 +17,9 @@ async function tokenMiddleware(req, res, next) {
 
     id = decoded.id;
   } catch (error) {
-    res.sendStatus(401);
+    res
+      .status(401)
+      .json({ auth: false, message: 'Failed to authenticate token.' });
     return;
   }
 
