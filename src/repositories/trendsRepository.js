@@ -3,11 +3,9 @@ import connection from '../databases/postgres.js';
 async function getTrends() {
     const { rows } = await connection.query(
       `
-        SELECT hashtags.id AS id, COUNT(hashtag_id) AS contagem, hashtags.nome
+        SELECT COUNT(post_hashtag.name) AS contagem, post_hashtag.name 
         FROM post_hashtag
-        JOIN hashtags
-        ON post_hashtag.hashtag_id = hashtags.id
-        GROUP BY hashtags.nome, hashtags.id
+        GROUP BY post_hashtag.name
         ORDER BY contagem DESC
         LIMIT 10
       `
@@ -18,19 +16,27 @@ async function getTrends() {
 async function getTrendsByName(name) {
     const { rows } = await connection.query(
       `
-        SELECT posts.id, posts.conteudo, posts.url, users.nome , users.foto as user_pic, hashtags.nome as hashtag_name, hashtags.id AS hastags_id, COUNT(curtidas.user_id) AS curtidas
-        FROM curtidas
-        JOIN posts
-        ON curtidas.post_id = posts.id
+        SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+        url_image AS "urlImage", url_description AS "urlDescription", post_hashtag.name,
+        COALESCE(COUNT(likes.post_id), 0) AS likes,
+        json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+        ARRAY (
+        SELECT users.name FROM likes
         JOIN users
-        ON posts.user_id = users.id
-        JOIN post_hashtag
+        ON likes.user_id = users.id
+        where posts.id = likes.post_id
+        ) AS "likedBy"
+        FROM post_hashtag
+        JOIN posts
         ON post_hashtag.post_id = posts.id
-        JOIN hashtags
-        ON post_hashtag.hashtag_id = hashtags.id
-        WHERE hashtags.nome ILIKE $1
-        GROUP BY posts.id, posts.conteudo, posts.url, users.nome, users.foto, hashtags.nome, hashtags.id
-        ORDER BY curtidas DESC
+        JOIN users
+        ON users.id = posts.user_id
+        LEFT JOIN likes
+        ON likes.post_id = posts.id
+        WHERE post_hashtag.name ILIKE $1
+        GROUP BY posts.id, post_hashtag.name, users.id
+        ORDER BY likes DESC
+        LIMIT 20
       `,
       [name]
     );
