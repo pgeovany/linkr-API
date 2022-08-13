@@ -24,4 +24,14 @@ async function getPosts(req, res) {
   }
 }
 
-export { savePost, getPosts };
+async function likePost(req, res) {
+  const { userId } = res.locals;
+  const { idPost } = req.body;
+  try {
+    await postsRepository.insertLikePost(userId, idPost);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export { savePost, getPosts, likePost };

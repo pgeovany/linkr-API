@@ -48,9 +48,21 @@ async function savePostHashtag(hashtag, postId) {
   );
 }
 
+async function insertLikePost(userId, postId) {
+  console.log(userId);
+  await connection.query(
+    `
+      INSERT INTO likes (user_id, post_id)
+      VALUES ($1, $2)
+    `,
+    [userId, postId]
+  );
+}
+
 const postsRepository = {
   savePost,
   getPosts,
+  insertLikePost,
 };
 
 export default postsRepository;
