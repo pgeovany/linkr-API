@@ -38,6 +38,24 @@ async function getPosts() {
   return rows;
 }
 
+async function getUserPosts(id) {
+  const { rows } = await connection.query(
+    `
+      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+      url_image AS "urlImage", url_description AS "urlDescription", 
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user"
+      FROM posts
+      JOIN users
+      ON users.id = posts.user_id
+      WHERE users.id = $1
+      ORDER BY posts.created_at DESC
+      LIMIT 20
+    `,
+    [id]
+  );
+  return rows;
+}
+
 async function savePostHashtag(hashtag, postId) {
   await connection.query(
     `
@@ -51,6 +69,7 @@ async function savePostHashtag(hashtag, postId) {
 const postsRepository = {
   savePost,
   getPosts,
+  getUserPosts,
 };
 
 export default postsRepository;

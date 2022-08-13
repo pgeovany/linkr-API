@@ -16,8 +16,17 @@ async function savePost(req, res) {
 }
 
 async function getPosts(req, res) {
+  const { id } = req.query;
+
   try {
-    const posts = await postsRepository.getPosts();
+    let posts;
+
+    if (id) {
+      posts = await postsRepository.getUserPosts(id);
+    } else {
+      posts = await postsRepository.getPosts();
+    }
+
     res.status(200).send(posts);
   } catch (error) {
     res.status(500).send(error);
