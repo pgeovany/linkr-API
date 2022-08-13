@@ -12,7 +12,7 @@ const postsSchema = joi.object({
 
 const loginSchema = joi.object({
   email: joi.string().required(),
-  senha: joi.string().required(),
+  password: joi.string().required(),
 });
 
 const logupSchema = joi.object({
