@@ -1,13 +1,16 @@
 import postsRepository from '../repositories/postsRepository.js';
+import getPostHashtags from '../utils/getPostHashtags.js';
 
 async function savePost(req, res) {
   const { userId } = res.locals;
   const { url, content } = req.body;
 
   try {
-    await postsRepository.savePost(userId, url, content);
+    const postHashtags = getPostHashtags(content);
+    await postsRepository.savePost(userId, url, content, postHashtags);
     res.sendStatus(201);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }

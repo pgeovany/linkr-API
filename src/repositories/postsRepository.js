@@ -1,17 +1,24 @@
 import connection from '../databases/postgres.js';
 import getUrlMetadata from '../utils/getUrlMetadata.js';
 
-async function savePost(userId, url, content) {
+async function savePost(userId, url, content, hashtags) {
   const postContent = content ? content : null;
   const { urlTitle, urlImage, urlDescription } = await getUrlMetadata(url);
 
-  await connection.query(
+  const { rows } = await connection.query(
     `
       INSERT INTO posts (user_id, content, url, url_title, url_image, url_description)
       VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id
     `,
     [userId, postContent, url, urlTitle, urlImage, urlDescription]
   );
+
+  const postId = rows[0].id;
+
+  if (hashtags) {
+    hashtags.forEach(async (hashtag) => await savePostHashtag(hashtag, postId));
+  }
 }
 
 async function getPosts() {
@@ -29,6 +36,16 @@ async function getPosts() {
   );
 
   return rows;
+}
+
+async function savePostHashtag(hashtag, postId) {
+  await connection.query(
+    `
+      INSERT INTO post_hashtag (post_id, name)
+      VALUES ($1, $2)
+    `,
+    [postId, hashtag]
+  );
 }
 
 const postsRepository = {
