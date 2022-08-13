@@ -18,7 +18,6 @@ async function getPosts(req, res) {
     const posts = await postsRepository.getPosts();
     res.status(200).send(posts);
   } catch (error) {
-    console.log(error);
     res.status(500).send(error);
   }
 }
