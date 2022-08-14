@@ -25,16 +25,54 @@ async function getPosts() {
   const { rows } = await connection.query(
     `
       SELECT posts.id, posts.content, url, url_title AS "urlTitle",
-      url_image AS "urlImage", url_description AS "urlDescription", 
-      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user"
+      url_image AS "urlImage", url_description AS "urlDescription",
+      COALESCE(COUNT(likes.post_id), 0) AS likes,
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      ARRAY (
+      SELECT users.name FROM likes
+      JOIN users
+      ON likes.user_id = users.id
+      WHERE posts.id = likes.post_id
+      ) AS "likedBy"
       FROM posts
       JOIN users
       ON users.id = posts.user_id
+      LEFT JOIN likes
+      ON likes.post_id = posts.id
+      GROUP BY posts.id, users.id
       ORDER BY posts.created_at DESC
       LIMIT 20
     `
   );
 
+  return rows;
+}
+
+async function getUserPosts(id) {
+  const { rows } = await connection.query(
+    `
+      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+      url_image AS "urlImage", url_description AS "urlDescription",
+      COALESCE(COUNT(likes.post_id), 0) AS likes,
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      ARRAY (
+      SELECT users.name FROM likes
+      JOIN users
+      ON likes.user_id = users.id
+      WHERE posts.id = likes.post_id
+      ) AS "likedBy"
+      FROM posts
+      JOIN users
+      ON users.id = posts.user_id
+      LEFT JOIN likes
+      ON likes.post_id = posts.id
+      WHERE users.id = $1
+      GROUP BY posts.id, users.id
+      ORDER BY posts.created_at DESC
+      LIMIT 20
+    `,
+    [id]
+  );
   return rows;
 }
 
@@ -74,6 +112,7 @@ const postsRepository = {
   getPosts,
   insertLikePost,
   deleteLikePost,
+  getUserPosts,
 };
 
 export default postsRepository;
