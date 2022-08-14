@@ -86,10 +86,49 @@ async function savePostHashtag(hashtag, postId) {
   );
 }
 
+async function isLikedBy(userId, postId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM likes
+      WHERE user_id = $1 AND post_id = $2
+    `,
+    [userId, postId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  return true;
+}
+
+async function likePost(userId, postId) {
+  await connection.query(
+    `
+      INSERT INTO likes (user_id, post_id)
+      VALUES ($1, $2)
+    `,
+    [userId, postId]
+  );
+}
+
+async function unlikePost(userId, postId) {
+  await connection.query(
+    `
+      DELETE FROM likes
+      WHERE user_id = $1 AND post_id = $2
+    `,
+    [userId, postId]
+  );
+}
+
 const postsRepository = {
   savePost,
   getPosts,
   getUserPosts,
+  isLikedBy,
+  likePost,
+  unlikePost,
 };
 
 export default postsRepository;

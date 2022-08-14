@@ -33,4 +33,20 @@ async function getPosts(req, res) {
   }
 }
 
-export { savePost, getPosts };
+async function reactToPost(req, res) {
+  const { postId } = req.body;
+  const { userId } = res.locals;
+
+  try {
+    if (await postsRepository.isLikedBy(userId, postId)) {
+      await postsRepository.unlikePost(userId, postId);
+    } else {
+      await postsRepository.likePost(userId, postId);
+    }
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export { savePost, getPosts, reactToPost };

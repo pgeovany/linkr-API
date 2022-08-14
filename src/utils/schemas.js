@@ -25,4 +25,8 @@ const logupSchema = joi.object({
     .required(),
 });
 
-export { postsSchema, loginSchema, logupSchema };
+const likeSchema = joi.object({
+  postId: joi.number().integer().required(),
+});
+
+export { postsSchema, loginSchema, logupSchema, likeSchema };
