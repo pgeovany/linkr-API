@@ -16,14 +16,15 @@ async function savePost(req, res) {
 
 async function getPosts(req, res) {
   const { id } = req.query;
+  const { userId } = res.locals;
 
   try {
     let posts;
 
     if (id) {
-      posts = await postsRepository.getUserPosts(id);
+      posts = await postsRepository.getUserPosts(id, userId);
     } else {
-      posts = await postsRepository.getPosts();
+      posts = await postsRepository.getPosts(userId);
     }
 
     res.status(200).send(posts);
