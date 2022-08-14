@@ -27,6 +27,7 @@ async function logIn(req, res) {
       name: validUser[0].name,
       image: validUser[0].image,
       token: token,
+      id: validUser[0].id,
     });
   } catch (err) {
     res.status(500).send(err);

@@ -13,8 +13,10 @@ async function getTrends(req, res) {
 
 async function getTrendByName(req, res) {
     const { name } = req.params;
+    const { params: id } = req.headers;
+    console.log(id);
     try {
-        const rows = await trendsRepository.getTrendsByName(name);
+        const rows = await trendsRepository.getTrendsByName(name, id);
         res.status(200).send(rows);
     } catch (err) {
         res.status(500).send(err);
