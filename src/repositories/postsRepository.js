@@ -86,9 +86,30 @@ async function savePostHashtag(hashtag, postId) {
   );
 }
 
+async function insertLikePost(userId, postId) {
+  await connection.query(
+    `
+      INSERT INTO likes (user_id, post_id)
+      VALUES ($1, $2)
+    `,
+    [userId, postId]
+  );
+}
+
+async function deleteLikePost(userId, postId) {
+  await connection.query(
+    `
+      DELETE FROM likes WHERE user_id = $1 AND post_id = $2;
+    `,
+    [userId, postId]
+  );
+}
+
 const postsRepository = {
   savePost,
   getPosts,
+  insertLikePost,
+  deleteLikePost,
   getUserPosts,
 
 };
