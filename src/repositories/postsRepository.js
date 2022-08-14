@@ -111,6 +111,7 @@ const postsRepository = {
   insertLikePost,
   deleteLikePost,
   getUserPosts,
+
 };
 
 export default postsRepository;

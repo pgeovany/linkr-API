@@ -40,7 +40,7 @@ async function logUp(req, res) {
     const { rowCount: thereIsEmail } = await userRepository.getUserByEmail(
       body.email
     );
-
+      console.log(thereIsEmail);
     if (thereIsEmail > 0) {
       return res.status(401).send('this email is already in use');
     }
