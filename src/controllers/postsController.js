@@ -35,7 +35,7 @@ async function getPosts(req, res) {
 async function likePost(req, res) {
   const { userId } = res.locals;
   const { idPost } = req.body;
-  console.log(req.body);
+
   try {
     await postsRepository.insertLikePost(userId, idPost);
     res.sendStatus(201);
@@ -47,7 +47,7 @@ async function likePost(req, res) {
 async function desLikePost(req, res) {
   const { userId } = res.locals;
   const { idPost } = req.params;
-  console.log(req.headers);
+
   try {
     await postsRepository.deleteLikePost(userId, idPost);
     res.sendStatus(200);

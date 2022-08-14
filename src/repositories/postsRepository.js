@@ -87,7 +87,6 @@ async function savePostHashtag(hashtag, postId) {
 }
 
 async function insertLikePost(userId, postId) {
-  console.log({ userId, postId });
   await connection.query(
     `
       INSERT INTO likes (user_id, post_id)
@@ -98,7 +97,6 @@ async function insertLikePost(userId, postId) {
 }
 
 async function deleteLikePost(userId, postId) {
-  console.log({ userId, postId });
   await connection.query(
     `
       DELETE FROM likes WHERE user_id = $1 AND post_id = $2;
