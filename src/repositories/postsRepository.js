@@ -90,6 +90,7 @@ const postsRepository = {
   savePost,
   getPosts,
   getUserPosts,
+
 };
 
 export default postsRepository;
