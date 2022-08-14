@@ -13,7 +13,7 @@ async function getTrends() {
     return rows;
 }
 
-async function getTrendsByName(name, id) {
+async function getTrendsByName(name, userId) {
     const { rows } = await connection.query(
       `
         SELECT posts.id, posts.content, url, url_title AS "urlTitle",
@@ -44,7 +44,7 @@ async function getTrendsByName(name, id) {
         ORDER BY likes DESC
         LIMIT 20
       `,
-      [name, id]
+      [name, userId]
     );
     return rows;
 }
