@@ -10,7 +10,6 @@ async function savePost(req, res) {
     await postsRepository.savePost(userId, url, content, postHashtags);
     res.sendStatus(201);
   } catch (error) {
-    console.log(error);
     res.status(500).send(error);
   }
 }
@@ -27,11 +26,25 @@ async function getPosts(req, res) {
 async function likePost(req, res) {
   const { userId } = res.locals;
   const { idPost } = req.body;
+  console.log(req.body);
   try {
     await postsRepository.insertLikePost(userId, idPost);
+    res.sendStatus(201);
   } catch (error) {
     res.status(500).send(error);
   }
 }
 
-export { savePost, getPosts, likePost };
+async function desLikePost(req, res) {
+  const { userId } = res.locals;
+  const { idPost } = req.params;
+  console.log(req.headers);
+  try {
+    await postsRepository.deleteLikePost(userId, idPost);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export { savePost, getPosts, likePost, desLikePost };
