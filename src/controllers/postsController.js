@@ -33,6 +33,23 @@ async function getPosts(req, res) {
   }
 }
 
+async function deletePost(req, res) {
+  const { userId } = res.locals;
+  const { postId } = req.params;
+
+  try {
+    if (await postsRepository.deletePost(postId, userId)) {
+      res.sendStatus(204);
+      return;
+    }
+
+    res.sendStatus(401);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+}
+
 async function likePost(req, res) {
   const { userId } = res.locals;
   const { idPost } = req.body;
@@ -57,4 +74,4 @@ async function desLikePost(req, res) {
   }
 }
 
-export { savePost, getPosts, likePost, desLikePost };
+export { savePost, getPosts, deletePost, likePost, desLikePost };
