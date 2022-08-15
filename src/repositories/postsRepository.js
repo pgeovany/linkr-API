@@ -164,6 +164,18 @@ async function savePostHashtag(hashtag, postId) {
 }
 
 async function insertLikePost(userId, postId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM likes
+      WHERE user_id = $1 AND post_id = $2
+    `,
+    [userId, postId]
+  );
+
+  if (rows.length > 0) {
+    return false;
+  }
+
   await connection.query(
     `
       INSERT INTO likes (user_id, post_id)
@@ -171,15 +183,31 @@ async function insertLikePost(userId, postId) {
     `,
     [userId, postId]
   );
+
+  return true;
 }
 
 async function deleteLikePost(userId, postId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM likes
+      WHERE user_id = $1 AND post_id = $2
+    `,
+    [userId, postId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
   await connection.query(
     `
       DELETE FROM likes WHERE user_id = $1 AND post_id = $2;
     `,
     [userId, postId]
   );
+
+  return true;
 }
 
 const postsRepository = {
