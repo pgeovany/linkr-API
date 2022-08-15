@@ -45,7 +45,32 @@ async function deletePost(req, res) {
 
     res.sendStatus(401);
   } catch (error) {
-    console.log(error);
+    res.status(500).send(error);
+  }
+}
+
+async function editPost(req, res) {
+  const { userId } = res.locals;
+  const { postId } = req.params;
+  const { url, content } = req.body;
+
+  try {
+    const postHashtags = getPostHashtags(content);
+    const validUpdate = await postsRepository.updatePost(
+      userId,
+      postId,
+      url,
+      content,
+      postHashtags
+    );
+
+    if (validUpdate) {
+      res.sendStatus(200);
+      return;
+    }
+
+    res.sendStatus(401);
+  } catch (error) {
     res.status(500).send(error);
   }
 }
@@ -74,4 +99,4 @@ async function desLikePost(req, res) {
   }
 }
 
-export { savePost, getPosts, deletePost, likePost, desLikePost };
+export { savePost, getPosts, deletePost, likePost, desLikePost, editPost };
