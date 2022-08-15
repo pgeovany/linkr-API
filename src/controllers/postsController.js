@@ -55,8 +55,12 @@ async function likePost(req, res) {
   const { idPost } = req.body;
 
   try {
-    await postsRepository.insertLikePost(userId, idPost);
-    res.sendStatus(201);
+    if (await postsRepository.insertLikePost(userId, idPost)) {
+      res.sendStatus(201);
+      return;
+    }
+
+    res.sendStatus(400);
   } catch (error) {
     res.status(500).send(error);
   }
@@ -67,8 +71,12 @@ async function desLikePost(req, res) {
   const { idPost } = req.params;
 
   try {
-    await postsRepository.deleteLikePost(userId, idPost);
-    res.sendStatus(200);
+    if (await postsRepository.deleteLikePost(userId, idPost)) {
+      res.sendStatus(200);
+      return;
+    }
+
+    res.sendStatus(400);
   } catch (error) {
     res.status(500).send(error);
   }

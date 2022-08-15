@@ -20,14 +20,14 @@ postsRouter.post(
 );
 
 postsRouter.get('/posts', tokenMiddleware, getPosts);
+postsRouter.delete('/posts/:postId', tokenMiddleware, deletePost);
+
 postsRouter.post(
   '/likes',
   tokenMiddleware,
   validateSchema(bodyLikePost),
   likePost
 );
-
-postsRouter.delete('/posts/:postId', tokenMiddleware, deletePost);
 
 postsRouter.delete('/likes/:idPost', tokenMiddleware, desLikePost);
 
