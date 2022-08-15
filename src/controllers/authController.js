@@ -27,6 +27,7 @@ async function logIn(req, res) {
       name: validUser[0].name,
       image: validUser[0].image,
       token: token,
+      userId: validUser[0].id,
     });
   } catch (err) {
     res.status(500).send(err);
@@ -40,7 +41,7 @@ async function logUp(req, res) {
     const { rowCount: thereIsEmail } = await userRepository.getUserByEmail(
       body.email
     );
-      console.log(thereIsEmail);
+    console.log(thereIsEmail);
     if (thereIsEmail > 0) {
       return res.status(401).send('this email is already in use');
     }
