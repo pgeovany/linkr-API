@@ -4,6 +4,8 @@ import {
   savePost,
   likePost,
   desLikePost,
+  deletePost,
+  editPost,
 } from '../controllers/postsController.js';
 import validateSchema from '../middlewares/schemaValidator.js';
 import tokenMiddleware from '../middlewares/tokenMiddleware.js';
@@ -25,6 +27,16 @@ postsRouter.post(
   validateSchema(bodyLikePost),
   likePost
 );
+
+postsRouter.delete('/posts/:postId', tokenMiddleware, deletePost);
+
+postsRouter.patch(
+  '/posts/:postId',
+  tokenMiddleware,
+  validateSchema(postsSchema),
+  editPost
+);
+
 postsRouter.delete('/likes/:idPost', tokenMiddleware, desLikePost);
 
 export default postsRouter;
