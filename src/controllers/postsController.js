@@ -38,13 +38,14 @@ async function deletePost(req, res) {
   const { postId } = req.params;
 
   try {
-    if (await deletePost(postId, userId)) {
+    if (await postsRepository.deletePost(postId, userId)) {
       res.sendStatus(204);
       return;
     }
 
     res.sendStatus(401);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }
