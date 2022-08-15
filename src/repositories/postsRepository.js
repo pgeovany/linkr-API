@@ -113,6 +113,46 @@ async function deletePost(postId, userId) {
   return true;
 }
 
+async function updatePost(userId, postId, url, content, hashtags) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM posts
+      WHERE posts.id = $1 AND posts.user_id = $2
+    `,
+    [postId, userId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  const postContent = content ? content : null;
+  const { urlTitle, urlImage, urlDescription } = await getUrlMetadata(url);
+
+  await connection.query(
+    `
+      UPDATE posts SET (content, url, url_title, url_image, url_description)
+      = ($1, $2, $3, $4, $5)
+      WHERE posts.id = $6 AND posts.user_id = $7
+    `,
+    [postContent, url, urlTitle, urlImage, urlDescription, postId, userId]
+  );
+
+  await connection.query(
+    `
+      DELETE FROM post_hashtag
+      WHERE post_id = $1
+    `,
+    [postId]
+  );
+
+  if (hashtags) {
+    hashtags.forEach(async (hashtag) => await savePostHashtag(hashtag, postId));
+  }
+
+  return true;
+}
+
 async function savePostHashtag(hashtag, postId) {
   await connection.query(
     `
@@ -149,6 +189,7 @@ const postsRepository = {
   deleteLikePost,
   getUserPosts,
   deletePost,
+  updatePost,
 };
 
 export default postsRepository;
