@@ -35,12 +35,12 @@ async function logIn(req, res) {
 
 async function logUp(req, res) {
   const body = req.body;
-  console.log(body);
+
   try {
     const { rowCount: thereIsEmail } = await userRepository.getUserByEmail(
       body.email
     );
-      console.log(thereIsEmail);
+
     if (thereIsEmail > 0) {
       return res.status(401).send('this email is already in use');
     }
@@ -49,11 +49,10 @@ async function logUp(req, res) {
     delete body.password;
 
     const bodyInsert = { ...body, password: encryptedPassword };
-    console.log(bodyInsert);
+
     await userRepository.insertUser(bodyInsert);
     res.sendStatus(201);
   } catch (error) {
-    console.log(error);
     res.sendStatus(500);
   }
 }

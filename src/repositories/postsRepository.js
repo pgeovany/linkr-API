@@ -80,7 +80,7 @@ async function getPosts(userId) {
     `,
     [userId]
   );
-  
+
   return rows;
 }
 
@@ -183,7 +183,6 @@ const postsRepository = {
   insertLikePost,
   deleteLikePost,
   getUserPosts,
-
 };
 
 export default postsRepository;
