@@ -51,36 +51,34 @@ async function savePost(userId, url, content, hashtags) {
 async function getPosts(userId) {
   const { rows } = await connection.query(
     `
-    SELECT posts.id, posts.content, url, url_title AS "urlTitle",
-    url_image AS "urlImage", url_description AS "urlDescription", post_hashtag.name,
-    COALESCE(COUNT(likes.post_id), 0) AS likes,
-    json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
-    ARRAY (
-      SELECT users.name FROM likes
+      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+      url_image AS "urlImage", url_description AS "urlDescription",
+      COALESCE(COUNT(likes.post_id), 0) AS likes,
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      ARRAY (
+        SELECT users.name FROM likes
+        JOIN users
+        ON likes.user_id = users.id
+        WHERE posts.id = likes.post_id
+      ) AS "likedBy",
+      (
+        SELECT likes.user_id 
+        FROM likes
+        WHERE likes.post_id = posts.id
+        AND user_id = $1
+      ) AS is_liked
+      FROM posts
       JOIN users
-      ON likes.user_id = users.id
-      where posts.id = likes.post_id
-    ) AS "likedBy",
-    (
-      SELECT likes.user_id 
-      FROM likes
-      WHERE likes.post_id = posts.id
-      AND user_id = $1
-    ) AS is_liked
-    FROM post_hashtag
-    JOIN posts
-    ON post_hashtag.post_id = posts.id
-    JOIN users
-    ON users.id = posts.user_id
-    LEFT JOIN likes
-    ON likes.post_id = posts.id
-    GROUP BY posts.id, post_hashtag.name, users.id
-    ORDER BY posts.created_at DESC
-    LIMIT 20
+      ON users.id = posts.user_id
+      LEFT JOIN likes
+      ON likes.post_id = posts.id
+      GROUP BY posts.id, users.id
+      ORDER BY posts.created_at DESC
+      LIMIT 20;
     `,
     [userId]
   );
-  
+
   return rows;
 }
 
@@ -115,37 +113,59 @@ async function getPosts(userId) {
 async function getUserPosts(id, userId) {
   const { rows } = await connection.query(
     `
-    SELECT posts.id, posts.content, url, url_title AS "urlTitle",
-    url_image AS "urlImage", url_description AS "urlDescription", post_hashtag.name,
-    COALESCE(COUNT(likes.post_id), 0) AS likes,
-    json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
-    ARRAY (
-      SELECT users.name FROM likes
+      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+      url_image AS "urlImage", url_description AS "urlDescription",
+      COALESCE(COUNT(likes.post_id), 0) AS likes,
+      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      ARRAY (
+        SELECT users.name FROM likes
+        JOIN users
+        ON likes.user_id = users.id
+        WHERE posts.id = likes.post_id
+      ) AS "likedBy",
+      (
+        SELECT likes.user_id 
+        FROM likes
+        WHERE likes.post_id = posts.id
+        AND user_id = $2
+      ) AS is_liked
+      FROM posts
       JOIN users
-      ON likes.user_id = users.id
-      where posts.id = likes.post_id
-    ) AS "likedBy",
-    (
-      SELECT likes.user_id 
-      FROM likes
-      WHERE likes.post_id = posts.id
-      AND user_id = $2
-    ) AS is_liked
-    FROM post_hashtag
-    JOIN posts
-    ON post_hashtag.post_id = posts.id
-    JOIN users
-    ON users.id = posts.user_id
-    LEFT JOIN likes
-    ON likes.post_id = posts.id
-    WHERE users.id = $1
-    GROUP BY posts.id, post_hashtag.name, users.id
-    ORDER BY likes DESC
-    LIMIT 20
+      ON users.id = posts.user_id
+      LEFT JOIN likes
+      ON likes.post_id = posts.id
+      WHERE users.id = $1
+      GROUP BY posts.id, users.id
+      ORDER BY posts.created_at DESC
+      LIMIT 20;
     `,
     [id, userId]
   );
   return rows;
+}
+
+async function deletePost(postId, userId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM posts
+      WHERE posts_id = $1 AND posts.user_id = $2
+    `,
+    [postId, userId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  await connection.query(
+    `
+      DELETE FROM posts
+      WHERE post_id = $1 AND posts.user_id = $2
+    `,
+    [postId, userId]
+  );
+
+  return true;
 }
 
 async function savePostHashtag(hashtag, postId) {
@@ -183,7 +203,6 @@ const postsRepository = {
   insertLikePost,
   deleteLikePost,
   getUserPosts,
-
 };
 
 export default postsRepository;
