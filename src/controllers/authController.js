@@ -26,6 +26,7 @@ async function logIn(req, res) {
       auth: true,
       name: validUser[0].name,
       image: validUser[0].image,
+      userId: validUser[0].id,
       token: token,
     });
   } catch (err) {

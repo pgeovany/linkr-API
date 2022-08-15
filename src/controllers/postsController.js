@@ -45,6 +45,7 @@ async function deletePost(req, res) {
 
     res.sendStatus(401);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }

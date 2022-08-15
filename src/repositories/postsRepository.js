@@ -38,7 +38,7 @@ async function getPosts(userId) {
         SELECT likes.user_id 
         FROM likes
         WHERE likes.post_id = posts.id
-        AND user_id = $1
+        AND likes.user_id = $1
       ) AS is_liked
       FROM posts
       JOIN users
@@ -51,7 +51,6 @@ async function getPosts(userId) {
     `,
     [userId]
   );
-
   return rows;
 }
 

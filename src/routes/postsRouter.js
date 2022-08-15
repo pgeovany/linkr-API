@@ -27,6 +27,7 @@ postsRouter.post(
   validateSchema(bodyLikePost),
   likePost
 );
+postsRouter.delete('/likes/:idPost', tokenMiddleware, desLikePost);
 
 postsRouter.delete('/posts/:postId', tokenMiddleware, deletePost);
 
@@ -36,7 +37,5 @@ postsRouter.patch(
   validateSchema(postsSchema),
   editPost
 );
-
-postsRouter.delete('/likes/:idPost', tokenMiddleware, desLikePost);
 
 export default postsRouter;
