@@ -10,6 +10,10 @@ const postsSchema = joi.object({
   content: joi.string(),
 });
 
+const editPostSchema = joi.object({
+  content: joi.string().required(),
+});
+
 const loginSchema = joi.object({
   email: joi.string().required(),
   password: joi.string().required(),
@@ -29,4 +33,4 @@ const bodyLikePost = joi.object({
   idPost: joi.number().required(),
 });
 
-export { postsSchema, loginSchema, logupSchema, bodyLikePost };
+export { postsSchema, loginSchema, logupSchema, bodyLikePost, editPostSchema };

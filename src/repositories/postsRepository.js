@@ -113,7 +113,7 @@ async function deletePost(postId, userId) {
   return true;
 }
 
-async function updatePost(userId, postId, url, content, hashtags) {
+async function updatePost(userId, postId, content, hashtags) {
   const { rows } = await connection.query(
     `
       SELECT * FROM posts
@@ -126,16 +126,12 @@ async function updatePost(userId, postId, url, content, hashtags) {
     return false;
   }
 
-  const postContent = content ? content : null;
-  const { urlTitle, urlImage, urlDescription } = await getUrlMetadata(url);
-
   await connection.query(
     `
-      UPDATE posts SET (content, url, url_title, url_image, url_description)
-      = ($1, $2, $3, $4, $5)
-      WHERE posts.id = $6 AND posts.user_id = $7
+      UPDATE posts SET content = $1
+      WHERE posts.id = $2 AND posts.user_id = $3
     `,
-    [postContent, url, urlTitle, urlImage, urlDescription, postId, userId]
+    [content, postId, userId]
   );
 
   await connection.query(

@@ -52,14 +52,13 @@ async function deletePost(req, res) {
 async function editPost(req, res) {
   const { userId } = res.locals;
   const { postId } = req.params;
-  const { url, content } = req.body;
+  const { content } = req.body;
 
   try {
     const postHashtags = getPostHashtags(content);
     const validUpdate = await postsRepository.updatePost(
       userId,
       postId,
-      url,
       content,
       postHashtags
     );
@@ -71,6 +70,7 @@ async function editPost(req, res) {
 
     res.sendStatus(401);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 }
