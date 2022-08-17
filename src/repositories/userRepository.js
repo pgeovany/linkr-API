@@ -31,10 +31,49 @@ async function searchUsers(name, id) {
   return rows;
 }
 
+async function isFollowedBy(followedId, followerId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM follows
+      WHERE followed_id = $1 AND follower_id = $2
+    `,
+    [followedId, followerId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  return true;
+}
+
+async function followUser(userId, userToBeFollowed) {
+  await connection.query(
+    `
+      INSERT INTO follows (follower_id, followed_id)
+      VALUES ($1, $2)
+    `,
+    [userId, userToBeFollowed]
+  );
+}
+
+async function unfollowUser(userId, userToBeUnFollowed) {
+  await connection.query(
+    `
+      DELETE FROM follows
+      WHERE follower_id = $1 AND followed_id = $2
+    `,
+    [userId, userToBeUnFollowed]
+  );
+}
+
 const userRepository = {
   getUserByEmail,
   insertUser,
   searchUsers,
+  isFollowedBy,
+  followUser,
+  unfollowUser,
 };
 
 export default userRepository;
