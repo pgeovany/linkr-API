@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   followUser,
+  getUserFollowingCount,
   searchUsers,
   unfollowUser,
 } from '../controllers/usersController.js';
@@ -19,5 +20,7 @@ usersRouter.post(
   tokenMiddleware,
   unfollowUser
 );
+
+usersRouter.get('/users/following', tokenMiddleware, getUserFollowingCount);
 
 export default usersRouter;

@@ -73,6 +73,18 @@ async function unfollowUser(userId, userToBeUnFollowed) {
   );
 }
 
+async function getUserFollowingCount(userId) {
+  const { rows } = await connection.query(
+    `
+      SELECT COUNT(*) as "following" FROM follows
+      WHERE follower_id = $1
+    `,
+    [userId]
+  );
+
+  return rows[0];
+}
+
 const userRepository = {
   getUserByEmail,
   insertUser,
@@ -80,6 +92,7 @@ const userRepository = {
   isFollowedBy,
   followUser,
   unfollowUser,
+  getUserFollowingCount,
 };
 
 export default userRepository;

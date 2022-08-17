@@ -46,9 +46,19 @@ async function unfollowUser(req, res) {
 
     res.sendStatus(400);
   } catch (error) {
-    console.log(error);
     res.sendStatus(500);
   }
 }
 
-export { searchUsers, followUser, unfollowUser };
+async function getUserFollowingCount(req, res) {
+  const { userId } = res.locals;
+
+  try {
+    const following = await userRepository.getUserFollowingCount(userId);
+    res.status(200).send(following);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
+export { searchUsers, followUser, unfollowUser, getUserFollowingCount };
