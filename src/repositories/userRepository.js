@@ -22,8 +22,14 @@ async function insertUser({ email, password, username, pictureUrl }) {
 async function searchUsers(name, id) {
   const { rows } = await connection.query(
     `
-      SELECT id, name, image FROM users
-      WHERE name ILIKE $1 AND id <> $2
+      SELECT users.id, users.name, users.image,
+      (
+        SELECT follows.id
+          FROM follows
+          WHERE followed_id = users.id AND follower_id = $2
+      ) AS is_follower
+      FROM users
+      WHERE users.name ILIKE $1 AND id <> $2;
     `,
     [`${name}%`, id]
   );
