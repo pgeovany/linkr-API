@@ -103,12 +103,12 @@ async function getUserPosts(id, userId) {
       SELECT likes.user_id 
       FROM likes
       WHERE likes.post_id = posts.id
-      AND user_id = $1
+      AND user_id = $2
     ) AS is_liked,
     (
       SELECT follows.id
       FROM follows
-      WHERE followed_id = posts.user_id AND follower_id = $1
+      WHERE followed_id = posts.user_id AND follower_id = $2
     ) AS is_follower, reposts.user_id, u.name as "repostedBy"
     FROM posts
     JOIN users
