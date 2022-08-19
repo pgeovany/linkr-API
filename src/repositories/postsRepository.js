@@ -27,7 +27,12 @@ async function getPosts(userId) {
       SELECT posts.id, posts.content, url, url_title AS "urlTitle",
       url_image AS "urlImage", url_description AS "urlDescription",
       COALESCE(COUNT(likes.post_id), 0) AS likes,
+      is_repost AS "isRepost", reposts.original_post_id,
+      json_build_object('id', reposts.original_post_id, 'likes', COALESCE(COUNT(l.post_id), 0),
+            'reposts', COALESCE(COUNT(r.original_post_id), 0), 'comments', 
+            COALESCE(COUNT(c.post_id), 0)) as "repostInfo",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
       ARRAY (
         SELECT users.name FROM likes
         JOIN users
@@ -44,13 +49,30 @@ async function getPosts(userId) {
         SELECT follows.id
         FROM follows
         WHERE followed_id = posts.user_id AND follower_id = $1
-      ) AS is_follower
+      ) AS is_follower, reposts.user_id as "repostOwnerId", u.name as "repostedBy",
+      (
+        SELECT follows.id
+        FROM follows
+        WHERE followed_id = reposts.user_id AND follower_id = $1
+      ) AS follows_who_reposted
       FROM posts
       JOIN users
       ON users.id = posts.user_id
       LEFT JOIN likes
       ON likes.post_id = posts.id
-      GROUP BY posts.id, users.id
+      left join reposts
+      on posts.id = reposts.repost_id
+      LEFT JOIN likes l
+      ON l.post_id = reposts.original_post_id
+      LEFT JOIN reposts r
+      ON posts.id = r.repost_id
+      LEFT JOIN comments c
+      ON c.post_id = r.original_post_id
+      left join users u
+      on reposts.user_id = u.id
+      left join comments
+      on posts.id = comments.post_id
+      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy", reposts.original_post_id
       ORDER BY posts.created_at DESC
       LIMIT 20;
     `,
@@ -66,7 +88,9 @@ async function getUserPosts(id, userId) {
       SELECT posts.id, posts.content, url, url_title AS "urlTitle",
       url_image AS "urlImage", url_description AS "urlDescription",
       COALESCE(COUNT(likes.post_id), 0) AS likes,
+      is_repost AS "isRepost",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
       ARRAY (
         SELECT users.name FROM likes
         JOIN users
@@ -83,19 +107,26 @@ async function getUserPosts(id, userId) {
         SELECT follows.id
         FROM follows
         WHERE followed_id = posts.user_id AND follower_id = $2
-      ) AS is_follower
+      ) AS is_follower, reposts.user_id, u.name as "repostedBy"
       FROM posts
       JOIN users
       ON users.id = posts.user_id
       LEFT JOIN likes
       ON likes.post_id = posts.id
+      left join reposts
+      on posts.id = reposts.repost_id
+      left join users u
+      on reposts.user_id = u.id
+      left join comments
+      on posts.id = comments.post_id
       WHERE users.id = $1
-      GROUP BY posts.id, users.id
+      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
       ORDER BY posts.created_at DESC
       LIMIT 20;
     `,
     [id, userId]
   );
+
   return rows;
 }
 
@@ -216,6 +247,51 @@ async function deleteLikePost(userId, postId) {
   return true;
 }
 
+async function getPostById(postId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM posts
+      WHERE id = $1
+    `,
+    [postId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  return rows[0];
+}
+
+async function saveRepost(userId, originalPost) {
+  const { rows } = await connection.query(
+    `
+      INSERT INTO posts (user_id, content, url, url_title, url_image, url_description, is_repost)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id
+    `,
+    [
+      originalPost.user_id,
+      originalPost.content,
+      originalPost.url,
+      originalPost.url_title,
+      originalPost.url_image,
+      originalPost.url_description,
+      true,
+    ]
+  );
+
+  const repostId = rows[0].id;
+
+  await connection.query(
+    `
+      INSERT INTO reposts (original_post_id, repost_id, user_id)
+      VALUES ($1, $2, $3)
+    `,
+    [originalPost.id, repostId, userId]
+  );
+}
+
 const postsRepository = {
   savePost,
   getPosts,
@@ -224,6 +300,8 @@ const postsRepository = {
   getUserPosts,
   deletePost,
   updatePost,
+  getPostById,
+  saveRepost,
 };
 
 export default postsRepository;
