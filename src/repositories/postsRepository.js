@@ -45,13 +45,17 @@ async function getPosts(userId) {
         SELECT follows.id
         FROM follows
         WHERE followed_id = posts.user_id AND follower_id = $1
-      ) AS is_follower
+      ) AS is_follower, reposts.user_id, u.name as "repostedBy"
       FROM posts
       JOIN users
       ON users.id = posts.user_id
       LEFT JOIN likes
       ON likes.post_id = posts.id
-      GROUP BY posts.id, users.id
+      left join reposts
+      on posts.id = reposts.repost_id
+      left join users u
+      on reposts.user_id = u.id
+      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
       ORDER BY posts.created_at DESC
       LIMIT 20;
     `,
@@ -85,14 +89,18 @@ async function getUserPosts(id, userId) {
         SELECT follows.id
         FROM follows
         WHERE followed_id = posts.user_id AND follower_id = $2
-      ) AS is_follower
+      ) AS is_follower, reposts.user_id, u.name as "repostedBy"
       FROM posts
       JOIN users
       ON users.id = posts.user_id
       LEFT JOIN likes
       ON likes.post_id = posts.id
+      left join reposts
+      on posts.id = reposts.repost_id
+      left join users u
+      on reposts.user_id = u.id
       WHERE users.id = $1
-      GROUP BY posts.id, users.id
+      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
       ORDER BY posts.created_at DESC
       LIMIT 20;
     `,
