@@ -29,6 +29,7 @@ async function getPosts(userId) {
       COALESCE(COUNT(likes.post_id), 0) AS likes,
       is_repost AS "isRepost",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+       COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
       ARRAY (
         SELECT users.name FROM likes
         JOIN users
@@ -45,7 +46,12 @@ async function getPosts(userId) {
         SELECT follows.id
         FROM follows
         WHERE followed_id = posts.user_id AND follower_id = $1
-      ) AS is_follower, reposts.user_id, u.name as "repostedBy"
+      ) AS is_follower, reposts.user_id, u.name as "repostedBy",
+      (
+        SELECT follows.id
+        FROM follows
+        WHERE followed_id = reposts.user_id AND follower_id = $1
+      ) AS follows_who_reposted
       FROM posts
       JOIN users
       ON users.id = posts.user_id
@@ -55,6 +61,8 @@ async function getPosts(userId) {
       on posts.id = reposts.repost_id
       left join users u
       on reposts.user_id = u.id
+      left join comments
+      on posts.id = comments.post_id
       GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
       ORDER BY posts.created_at DESC
       LIMIT 20;
@@ -73,6 +81,7 @@ async function getUserPosts(id, userId) {
       COALESCE(COUNT(likes.post_id), 0) AS likes,
       is_repost AS "isRepost",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+      COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
       ARRAY (
         SELECT users.name FROM likes
         JOIN users
@@ -99,6 +108,8 @@ async function getUserPosts(id, userId) {
       on posts.id = reposts.repost_id
       left join users u
       on reposts.user_id = u.id
+      left join comments
+      on posts.id = comments.post_id
       WHERE users.id = $1
       GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
       ORDER BY posts.created_at DESC
