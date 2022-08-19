@@ -22,12 +22,14 @@ async function getPostComments(userId, postId) {
   console.log(userId, postId, 'getPostComments');
   const { rows } = await connection.query(
     `
-      SELECT comments.*, co.name as comment_owner, co.image as comment_owner_image, posts.user_id as post_owner_id, po.name as post_owner_name, po.image as post_owner_image, 
+      SELECT comments.user_id as "userId", comments.content, comments.post_id as "postId", 
+      comments.created_at as createdAt, co.name as "commentOwner", co.image as "commentOwnerImage", 
+      posts.user_id as "postOwnerId", po.name as "postOwnerName", po.image as "postOwnerImage", 
       (SELECT
       CASE
         WHEN followed_id = co.id THEN 'true'
         ELSE 'false'
-      END is_following
+      END "isFollowing"
       FROM follows
       WHERE followed_id = co.id
       AND follower_id = $1
