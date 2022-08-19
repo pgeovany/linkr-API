@@ -27,6 +27,7 @@ async function getPosts(userId) {
       SELECT posts.id, posts.content, url, url_title AS "urlTitle",
       url_image AS "urlImage", url_description AS "urlDescription",
       COALESCE(COUNT(likes.post_id), 0) AS likes,
+      is_repost AS "isRepost",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
       ARRAY (
         SELECT users.name FROM likes
@@ -66,6 +67,7 @@ async function getUserPosts(id, userId) {
       SELECT posts.id, posts.content, url, url_title AS "urlTitle",
       url_image AS "urlImage", url_description AS "urlDescription",
       COALESCE(COUNT(likes.post_id), 0) AS likes,
+      is_repost AS "isRepost",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
       ARRAY (
         SELECT users.name FROM likes
@@ -96,6 +98,7 @@ async function getUserPosts(id, userId) {
     `,
     [id, userId]
   );
+
   return rows;
 }
 
@@ -216,6 +219,51 @@ async function deleteLikePost(userId, postId) {
   return true;
 }
 
+async function getPostById(postId) {
+  const { rows } = await connection.query(
+    `
+      SELECT * FROM posts
+      WHERE id = $1
+    `,
+    [postId]
+  );
+
+  if (rows.length === 0) {
+    return false;
+  }
+
+  return rows[0];
+}
+
+async function saveRepost(userId, originalPost) {
+  const { rows } = await connection.query(
+    `
+      INSERT INTO posts (user_id, content, url, url_title, url_image, url_description, is_repost)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id
+    `,
+    [
+      originalPost.user_id,
+      originalPost.content,
+      originalPost.url,
+      originalPost.url_title,
+      originalPost.url_image,
+      originalPost.url_description,
+      true,
+    ]
+  );
+
+  const repostId = rows[0].id;
+
+  await connection.query(
+    `
+      INSERT INTO reposts (original_post_id, repost_id, user_id)
+      VALUES ($1, $2, $3)
+    `,
+    [originalPost.id, repostId, userId]
+  );
+}
+
 const postsRepository = {
   savePost,
   getPosts,
@@ -224,6 +272,8 @@ const postsRepository = {
   getUserPosts,
   deletePost,
   updatePost,
+  getPostById,
+  saveRepost,
 };
 
 export default postsRepository;

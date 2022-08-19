@@ -107,4 +107,29 @@ async function desLikePost(req, res) {
   }
 }
 
-export { savePost, getPosts, deletePost, likePost, desLikePost, editPost };
+async function repost(req, res) {
+  const { userId } = res.locals;
+  const { postId } = req.params;
+
+  try {
+    const originalPost = await postsRepository.getPostById(postId);
+    if (!originalPost) {
+      res.sendStatus(404);
+      return;
+    }
+    await postsRepository.saveRepost(userId, originalPost);
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export {
+  savePost,
+  getPosts,
+  deletePost,
+  likePost,
+  desLikePost,
+  editPost,
+  repost,
+};
