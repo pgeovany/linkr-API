@@ -28,6 +28,9 @@ async function getPosts(userId) {
       url_image AS "urlImage", url_description AS "urlDescription",
       COALESCE(COUNT(likes.post_id), 0) AS likes,
       is_repost AS "isRepost", reposts.original_post_id,
+      json_build_object('id', reposts.original_post_id, 'likes', COALESCE(COUNT(l.post_id), 0),
+            'reposts', COALESCE(COUNT(r.original_post_id), 0), 'comments', 
+            COALESCE(COUNT(c.post_id), 0)) as "repostInfo",
       json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
       COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
       ARRAY (
@@ -59,6 +62,12 @@ async function getPosts(userId) {
       ON likes.post_id = posts.id
       left join reposts
       on posts.id = reposts.repost_id
+      LEFT JOIN likes l
+      ON l.post_id = reposts.original_post_id
+      LEFT JOIN reposts r
+      ON posts.id = r.repost_id
+      LEFT JOIN comments c
+      ON c.post_id = r.original_post_id
       left join users u
       on reposts.user_id = u.id
       left join comments
