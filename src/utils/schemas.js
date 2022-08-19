@@ -33,4 +33,8 @@ const bodyLikePost = joi.object({
   idPost: joi.number().required(),
 });
 
-export { postsSchema, loginSchema, logupSchema, bodyLikePost, editPostSchema };
+const commentSchema = joi.object({
+  content: joi.string().required(),
+});
+
+export { postsSchema, loginSchema, logupSchema, bodyLikePost, editPostSchema, commentSchema };
