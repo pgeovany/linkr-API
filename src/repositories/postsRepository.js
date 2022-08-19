@@ -24,57 +24,59 @@ async function savePost(userId, url, content, hashtags) {
 async function getPosts(userId) {
   const { rows } = await connection.query(
     `
-      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
-      url_image AS "urlImage", url_description AS "urlDescription",
-      COALESCE(COUNT(likes.post_id), 0) AS likes,
-      is_repost AS "isRepost", reposts.original_post_id,
-      json_build_object('id', reposts.original_post_id, 'likes', COALESCE(COUNT(l.post_id), 0),
-            'reposts', COALESCE(COUNT(r.original_post_id), 0), 'comments', 
-            COALESCE(COUNT(c.post_id), 0)) as "repostInfo",
-      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
-      COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
-      ARRAY (
-        SELECT users.name FROM likes
-        JOIN users
-        ON likes.user_id = users.id
-        WHERE posts.id = likes.post_id
-      ) AS "likedBy",
-      (
-        SELECT likes.user_id 
-        FROM likes
-        WHERE likes.post_id = posts.id
-        AND user_id = $1
-      ) AS is_liked,
-      (
-        SELECT follows.id
-        FROM follows
-        WHERE followed_id = posts.user_id AND follower_id = $1
-      ) AS is_follower, reposts.user_id as "repostOwnerId", u.name as "repostedBy",
-      (
-        SELECT follows.id
-        FROM follows
-        WHERE followed_id = reposts.user_id AND follower_id = $1
-      ) AS follows_who_reposted
-      FROM posts
+    SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+    url_image AS "urlImage", url_description AS "urlDescription",
+    COALESCE(COUNT(likes.post_id), 0) AS likes,
+    is_repost AS "isRepost", reposts.original_post_id,
+    json_build_object('id', reposts.original_post_id, 'likes', COALESCE(COUNT(l.post_id), 0),
+          'reposts', COALESCE(COUNT(r.original_post_id), 0), 'comments', 
+          COALESCE(COUNT(c.post_id), 0)) as "repostInfo",
+    json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+    COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
+    ARRAY (
+      SELECT users.name FROM likes
       JOIN users
-      ON users.id = posts.user_id
-      LEFT JOIN likes
-      ON likes.post_id = posts.id
-      left join reposts
-      on posts.id = reposts.repost_id
-      LEFT JOIN likes l
-      ON l.post_id = reposts.original_post_id
-      LEFT JOIN reposts r
-      ON posts.id = r.repost_id
-      LEFT JOIN comments c
-      ON c.post_id = r.original_post_id
-      left join users u
-      on reposts.user_id = u.id
-      left join comments
-      on posts.id = comments.post_id
-      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy", reposts.original_post_id
-      ORDER BY posts.created_at DESC
-      LIMIT 20;
+      ON likes.user_id = users.id
+      WHERE posts.id = likes.post_id
+    ) AS "likedBy",
+    (
+      SELECT likes.user_id 
+      FROM likes
+      WHERE likes.post_id = posts.id
+      AND user_id = $1
+    ) AS is_liked,
+    (
+      SELECT follows.id
+      FROM follows
+      WHERE followed_id = posts.user_id AND follower_id = $1
+    ) AS is_follower, reposts.user_id as "repostOwnerId", u.name as "repostedBy",
+    (
+      SELECT follows.id
+      FROM follows
+      WHERE followed_id = reposts.user_id AND follower_id = $1
+    ) AS follows_who_reposted
+    FROM posts
+    JOIN users
+    ON users.id = posts.user_id
+    LEFT JOIN likes
+    ON likes.post_id = posts.id
+    left join reposts
+    on posts.id = reposts.repost_id
+    LEFT JOIN likes l
+    ON l.post_id = reposts.original_post_id
+    LEFT JOIN reposts r
+    ON posts.id = r.repost_id
+    LEFT JOIN comments c
+    ON c.post_id = r.original_post_id
+    left join users u
+    on reposts.user_id = u.id
+    left join comments
+    on posts.id = comments.post_id
+    GROUP BY posts.id, users.id, reposts.user_id, "repostedBy", 
+    reposts.original_post_id, posts.content, url, url_title, url_image, url_description,
+    is_repost, users.name, users.image, posts.user_id, posts.created_at
+    ORDER BY posts.created_at DESC
+    LIMIT 20
     `,
     [userId]
   );
@@ -85,44 +87,46 @@ async function getPosts(userId) {
 async function getUserPosts(id, userId) {
   const { rows } = await connection.query(
     `
-      SELECT posts.id, posts.content, url, url_title AS "urlTitle",
-      url_image AS "urlImage", url_description AS "urlDescription",
-      COALESCE(COUNT(likes.post_id), 0) AS likes,
-      is_repost AS "isRepost",
-      json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
-      COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
-      ARRAY (
-        SELECT users.name FROM likes
-        JOIN users
-        ON likes.user_id = users.id
-        WHERE posts.id = likes.post_id
-      ) AS "likedBy",
-      (
-        SELECT likes.user_id 
-        FROM likes
-        WHERE likes.post_id = posts.id
-        AND user_id = $2
-      ) AS is_liked,
-      (
-        SELECT follows.id
-        FROM follows
-        WHERE followed_id = posts.user_id AND follower_id = $2
-      ) AS is_follower, reposts.user_id, u.name as "repostedBy"
-      FROM posts
+    SELECT posts.id, posts.content, url, url_title AS "urlTitle",
+    url_image AS "urlImage", url_description AS "urlDescription",
+    COALESCE(COUNT(likes.post_id), 0) AS likes,
+    is_repost AS "isRepost",
+    json_build_object('id', users.id, 'name', users.name, 'picture', users.image) AS "user",
+    COALESCE(COUNT(comments.post_id), 0) AS comments_counter,
+    ARRAY (
+      SELECT users.name FROM likes
       JOIN users
-      ON users.id = posts.user_id
-      LEFT JOIN likes
-      ON likes.post_id = posts.id
-      left join reposts
-      on posts.id = reposts.repost_id
-      left join users u
-      on reposts.user_id = u.id
-      left join comments
-      on posts.id = comments.post_id
-      WHERE users.id = $1
-      GROUP BY posts.id, users.id, reposts.user_id, "repostedBy"
-      ORDER BY posts.created_at DESC
-      LIMIT 20;
+      ON likes.user_id = users.id
+      WHERE posts.id = likes.post_id
+    ) AS "likedBy",
+    (
+      SELECT likes.user_id 
+      FROM likes
+      WHERE likes.post_id = posts.id
+      AND user_id = $1
+    ) AS is_liked,
+    (
+      SELECT follows.id
+      FROM follows
+      WHERE followed_id = posts.user_id AND follower_id = $1
+    ) AS is_follower, reposts.user_id, u.name as "repostedBy"
+    FROM posts
+    JOIN users
+    ON users.id = posts.user_id
+    LEFT JOIN likes
+    ON likes.post_id = posts.id
+    left join reposts
+    on posts.id = reposts.repost_id
+    left join users u
+    on reposts.user_id = u.id
+    left join comments
+    on posts.id = comments.post_id
+    WHERE users.id = $1
+    GROUP BY posts.id, users.id, reposts.user_id, "repostedBy", 
+    reposts.original_post_id, posts.content, url, url_title, url_image, url_description,
+    is_repost, users.name, users.image, posts.user_id, posts.created_at
+    ORDER BY posts.created_at DESC
+    LIMIT 20
     `,
     [id, userId]
   );
